@@ -96,64 +96,81 @@ public class ChartFrame extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				startDCA();
+				// startDCA();
 			}
 		});
 
 		imp = new DCAImp();
 		imp.setOnAntigenMarkListener(new DCAImp.OnAntigenMarkListener() {
-			
+
 			@Override
 			public void onAntigenMarked(DCAImp.AntigenResult result) {
 				ChartFrame.this.onAntigenMarked(result);
 			}
-			
+
 			@Override
 			public void onMarkedFinished() {
 				validate();
 			}
-			
+
 		});
+		startDCA(null);
 	}
 
 	String filePath;
 	DCAImp imp;
 	ChartConverter cc;
-	
-	private void onAntigenMarked(DCAImp.AntigenResult result){
+
+	private void onAntigenMarked(DCAImp.AntigenResult result) {
 		cc.addItem(result);
-//		new SwingWorker<Void, Void>() {
-//
-//			@Override
-//			protected Void doInBackground() throws Exception {
-//				
-//				Thread.sleep(300);
-//				return null;
-//			}
-//
-//
-//			@Override
-//			protected void done() {
-//				cc.addItem(result);
-//				validate();
-//			}
-//		}.execute();
+		// new SwingWorker<Void, Void>() {
+		//
+		// @Override
+		// protected Void doInBackground() throws Exception {
+		//
+		// Thread.sleep(300);
+		// return null;
+		// }
+		//
+		//
+		// @Override
+		// protected void done() {
+		// cc.addItem(result);
+		// validate();
+		// }
+		// }.execute();
 	}
 
-	protected void startDCA() {
+	protected void startDCA(String filePath) {
 		if (filePath == null) {
-			JOptionPane.showMessageDialog(this, "请先导入数据");
-		} else {
-			
-			imp.start();
-//			JFreeChart chart = ChartConverter.createScatterPlot(imp.getResultArray());
-//			ChartPanel cp = new ChartPanel(chart);
-//			cp.setPreferredSize(new Dimension(getWidth()-60, getHeight()-100));
-//			chartPanel.removeAll();
-//			chartPanel.add(cp);
-//			validate();
-//			ChartConverter.saveChart(chart, "test.jpg");
+			filePath = "kddcup_normalized.csv";
+			if (!new File(filePath).exists()) {
+				JOptionPane.showMessageDialog(this, "请先导入数据");
+				return;
+			}
+
 		}
+		try {
+			imp.parseDataTxt(filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		cc = new ChartConverter();
+		JFreeChart chart = cc.createScatterPlot(imp.getResultArray());
+		ChartPanel cp = new ChartPanel(chart);
+		cp.setPreferredSize(new Dimension(getWidth() - 60, getHeight() - 100));
+		chartPanel.removeAll();
+		chartPanel.add(cp);
+		validate();
+		imp.start();
+		// JFreeChart chart =
+		// ChartConverter.createScatterPlot(imp.getResultArray());
+		// ChartPanel cp = new ChartPanel(chart);
+		// cp.setPreferredSize(new Dimension(getWidth()-60, getHeight()-100));
+		// chartPanel.removeAll();
+		// chartPanel.add(cp);
+		// validate();
+		// ChartConverter.saveChart(chart, "test.jpg");
 	}
 
 	protected void openFileDialog() {
@@ -165,19 +182,7 @@ public class ChartFrame extends JFrame {
 			return;
 		filePath = file.getPath();
 		fileTextField.setText(filePath);
-		try {
-			imp.parseDataTxt(filePath);
-			cc = new ChartConverter();
-			JFreeChart chart = cc.createScatterPlot(imp.getResultArray());
-			ChartPanel cp = new ChartPanel(chart);
-			cp.setPreferredSize(new Dimension(getWidth()-60, getHeight()-100));
-			chartPanel.removeAll();
-			chartPanel.add(cp);
-			validate();
-		} catch (IOException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(this, "该数据文件内容格式有误，请检查后再试");
-		}
+		startDCA(filePath);
 
 	}
 
