@@ -23,7 +23,8 @@ public class DCAImp {
 	private static final boolean printLog = true;
 
 	// FIXME 选取特定的一些列来计算PAMP，SS，DS
-	private static final String[] COLUMNS_TO_CAL = { "same_srv_rate", "dst_host_srv_count", "same_srv_rate" };
+	private static final String[] COLUMNS_TO_CAL = { "same_srv_rate",
+			"dst_host_srv_count", "same_srv_rate" };
 
 	// TODO 随机取1W条数据集
 	public static final int RANDOM_DATA_COUNT = 10000;
@@ -142,7 +143,6 @@ public class DCAImp {
 	private int[] mJudgeSumCountArray;
 	private int[] mJudgeExceptionCountArray;
 	private List<Integer> mUnMarkIndexList;
-	private List<Integer> mUnChosenIndexList;
 	// private List<AntigenResult> mAntiResultList;
 	private AntigenResult[] mAntiResultArray;
 
@@ -172,8 +172,8 @@ public class DCAImp {
 	private int chooseOneAntigen() {
 		// TODO 选择抗原的方式，随机还是按一定规律，自己修改
 		Random random = new Random();
-		int selectedIndex = random.nextInt(mUnChosenIndexList.size());
-		int antigenIndex = mUnChosenIndexList.get(selectedIndex);
+		int selectedIndex = random.nextInt(mUnMarkIndexList.size());
+		int antigenIndex = mUnMarkIndexList.get(selectedIndex);
 		return antigenIndex;
 	}
 
@@ -199,39 +199,91 @@ public class DCAImp {
 			// 初始化DC细胞，设置阈值
 			DCCell cell = new DCCell();
 			initMigrationValue();
-			List<Integer> antigenIndexs = new ArrayList<Integer>(CHOOSE_ANTIGEN_COUNT);
+			List<Integer> antigenIndexs = new ArrayList<Integer>(
+					CHOOSE_ANTIGEN_COUNT);
 			// 判断CSM与阈值
+			int calCount = 0;
 			while (cell.CSM <= mMigrationThreshold) {
-				
-				if(mUnChosenIndexList.isEmpty()){
-					stopFlag = true;
-					for (int i = 0; i < antigenIndexs.size(); i++) {
-						AntigenResult ar = mAntiResultArray[antigenIndexs.get(i)];
-						ar.status = -1;
-						print("第 "+antigenIndexs.get(i)+" 条数据这一轮GG了，不会被标记了，(～￣▽￣)～ ，摸摸哒");
+				calCount++;
+
+				// 处理最后几个未标记的抗原，或者运行了很多很多次几乎死循环的情况
+				if (mUnMarkIndexList.size() <= CHOOSE_ANTIGEN_COUNT || calCount == Integer.MAX_VALUE) {
+					cell = new DCCell();
+					for (int index = 0; index < mUnMarkIndexList.size(); index++) {
+						// 计算CSM,SEMI,MAT
+						cell.CSM += mPAMPArray[index] * mWeightMatrix[0][0]
+								+ mDSArray[index] * mWeightMatrix[0][1]
+								+ mSSArray[index] * mWeightMatrix[0][2];
+						cell.SEMI += mPAMPArray[index] * mWeightMatrix[1][0]
+								+ mDSArray[index] * mWeightMatrix[1][1]
+								+ mSSArray[index] * mWeightMatrix[1][2];
+						cell.MAT += mPAMPArray[index] * mWeightMatrix[2][0]
+								+ mDSArray[index] * mWeightMatrix[2][1]
+								+ mSSArray[index] * mWeightMatrix[2][2];
 					}
-					
-					break;
+					// 如果剩下的抗原加起来也无法超过阈值，则一起打包处理
+					if (cell.CSM <= mMigrationThreshold) {
+						// 开始迁移
+						if (cell.SEMI >= cell.MAT) {
+							cell.status = STATUS_SEMI;
+						} else {
+							cell.status = STATUS_MAT;
+						}
+						for (int i = 0; i < mUnMarkIndexList.size(); i++) {
+							// 记录判定状态
+							int index = mUnMarkIndexList.get(i);
+							mJudgeSumCountArray[index]++;
+							if (cell.status == STATUS_MAT) {
+								mJudgeExceptionCountArray[index]++;
+							}
+
+							// 标记抗原
+							float ratio = (float) mJudgeExceptionCountArray[index]
+									/ mJudgeSumCountArray[index];
+							AntigenResult ar = mAntiResultArray[index];
+							ar.ID = (int) mAntigenArray[index][0];
+							ar.MCAV = ratio;
+							if (ratio > EXCEPTION_THRESHOLD) {// 超过阈值，计算MCAV
+								ar.status = 1;
+							} else {
+								ar.status = 0;
+							}
+							// 判断是否是误判漏判的
+							// if (mAntigenArray[index][42] != ar.status) {
+							// ar.status = 2;
+							// }
+							mUnMarkIndexList.remove((Object) index);
+							print("第 " + index + " 条数据这一轮强行被标记了，(～￣▽￣)～ ，摸摸哒");
+							if (mAntigenMarkListener != null) {
+								mAntigenMarkListener.onAntigenMarked(ar);
+							}
+						}
+						stopFlag = true;
+						break;
+					}
+
 				}
 
 				if (antigenIndexs.size() >= CHOOSE_ANTIGEN_COUNT) {
 					cell = new DCCell();
 					initMigrationValue();
 					antigenIndexs.clear();
-					mUnChosenIndexList.addAll(antigenIndexs);
 				}
 				// 采集不同的抗原
 				int index = chooseOneAntigen();
 				antigenIndexs.add(index);
-				mUnChosenIndexList.remove((Object)index);
 				// 计算CSM,SEMI,MAT
-				cell.CSM += mPAMPArray[index] * mWeightMatrix[0][0] + mDSArray[index] * mWeightMatrix[0][1]
+				cell.CSM += mPAMPArray[index] * mWeightMatrix[0][0]
+						+ mDSArray[index] * mWeightMatrix[0][1]
 						+ mSSArray[index] * mWeightMatrix[0][2];
-				cell.SEMI += mPAMPArray[index] * mWeightMatrix[1][0] + mDSArray[index] * mWeightMatrix[1][1]
+				cell.SEMI += mPAMPArray[index] * mWeightMatrix[1][0]
+						+ mDSArray[index] * mWeightMatrix[1][1]
 						+ mSSArray[index] * mWeightMatrix[1][2];
-				cell.MAT += mPAMPArray[index] * mWeightMatrix[2][0] + mDSArray[index] * mWeightMatrix[2][1]
+				cell.MAT += mPAMPArray[index] * mWeightMatrix[2][0]
+						+ mDSArray[index] * mWeightMatrix[2][1]
 						+ mSSArray[index] * mWeightMatrix[2][2];
 			}
+			calCount = 0;
 			csmList.add(cell.CSM);
 			// evalMigrationValue();
 			// 开始迁移
@@ -251,7 +303,8 @@ public class DCAImp {
 
 				// 标记抗原
 				if (mJudgeSumCountArray[index] >= JUDGE_THRESHOLD) {
-					float ratio = (float) mJudgeExceptionCountArray[index] / mJudgeSumCountArray[index];
+					float ratio = (float) mJudgeExceptionCountArray[index]
+							/ mJudgeSumCountArray[index];
 					AntigenResult ar = mAntiResultArray[index];
 					ar.ID = (int) mAntigenArray[index][0];
 					ar.MCAV = ratio;
@@ -261,9 +314,9 @@ public class DCAImp {
 						ar.status = 0;
 					}
 					// 判断是否是误判漏判的
-//					if (mAntigenArray[index][42] != ar.status) {
-//						ar.status = 2;
-//					}
+					// if (mAntigenArray[index][42] != ar.status) {
+					// ar.status = 2;
+					// }
 					mUnMarkIndexList.remove((Object) index);
 					print("抗原--" + index + "--被标记");
 					print("未标记抗原数量--" + mUnMarkIndexList.size());
@@ -337,7 +390,6 @@ public class DCAImp {
 		mJudgeExceptionCountArray = new int[dataList.size()];
 		mAntiResultArray = new AntigenResult[dataList.size()];
 		mUnMarkIndexList = new ArrayList<Integer>(dataList.size());
-		mUnChosenIndexList = new ArrayList<Integer>(dataList.size());
 		// mAntiResultList = new ArrayList<AntigenResult>(dataList.size());
 
 		for (int i = 0; i < dataList.size(); i++) {
@@ -348,7 +400,6 @@ public class DCAImp {
 
 		for (int i = 0; i < mAntigenArray.length; i++) {
 			mUnMarkIndexList.add(i);
-			mUnChosenIndexList.add(i);
 		}
 
 	}
