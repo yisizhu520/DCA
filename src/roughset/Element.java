@@ -2,8 +2,9 @@ package roughset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-class Element {
+class Element implements Comparable<Element> {
 
     private List<Integer> valueOfCondition = new ArrayList<Integer>(0);
     private int valueOfDecision;
@@ -47,5 +48,23 @@ class Element {
 
     public void setTempPropertyValue(String tempPropertyValue) {
         this.tempPropertyValue = tempPropertyValue;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Element element = (Element) o;
+        return u == element.u;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(u);
+    }
+
+    @Override
+    public int compareTo(Element o) {
+        return this.u - o.u;
     }
 }
