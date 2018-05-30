@@ -21,7 +21,8 @@ import org.jfree.util.StringUtils;
  */
 public class DCAImp {
 
-	private static final boolean printLog = true;
+	public static boolean printLog = true;
+	public static boolean needSaveResultFile = true;
 
 	// FIXME 选取特定的一些列来计算PAMP，SS，DS
 //	private static final String[] COLUMNS_TO_CAL = {"count","src_bytes","dst_host_same_src_port_rate","dst_host_srv_serror_rate","dst_host_srv_diff_host_rate"};
@@ -53,7 +54,7 @@ public class DCAImp {
 	public static float MinDS=Float.POSITIVE_INFINITY;
 	public static float MaxSS=Float.NEGATIVE_INFINITY;
 	public static float MinSS=Float.POSITIVE_INFINITY;
-	private void print(String msg) {
+	private void print(Object msg) {
 		if (printLog) {
 			System.out.println(msg);
 		}
@@ -301,7 +302,13 @@ public class DCAImp {
 	public interface OnAntigenMarkListener {
 		void onAntigenMarked(AntigenResult result);
 
-		void onMarkedFinished();
+		void onMarkedFinished(ResultData data);
+	}
+
+	public static class ResultData {
+		public float correct;
+		public float falsePosi;
+		public float trueNega;
 	}
 
 	public DCAImp() {
@@ -480,7 +487,7 @@ public class DCAImp {
 				}
 			}
 		}
-		mAntigenMarkListener.onMarkedFinished();
+
 		print("标记完成");
 		String fileName = "kddcup_checked.csv";
 		float correct=0,falsePosi=0,trueNega=0;//falsePosi即不是有害，被标记为有害，trueNega即是有害，但是没有被标记出来
@@ -496,17 +503,24 @@ public class DCAImp {
 				falsePosi++;
 			}
 		}
-		saveResult(fileName);
+		if (needSaveResultFile) {
+			saveResult(fileName);
+		}
 		print("输出结果完成--" + fileName);
 		print("MaxCSM=" + MaxCSM);
 		print("MinCSM=" + MinCSM);
 		print("correct=" + correct/mAntiResultArray.length);
 		print("falsePosi=" + falsePosi/mAntiResultArray.length);
 		print("trueNega=" + trueNega/mAntiResultArray.length);
-		System.out.println("MCAV="+EXCEPTION_THRESHOLD);
+		print("MCAV="+EXCEPTION_THRESHOLD);
 		print("MaxPAMP=" + MaxPAMP);
 		print("MaxSS=" + MaxSS);
 		print("MaxDS=" + MaxDS);
+		ResultData resultData = new ResultData();
+		resultData.correct = correct/mAntiResultArray.length;
+		resultData.falsePosi = falsePosi/mAntiResultArray.length;
+		resultData.trueNega = trueNega/mAntiResultArray.length;
+		mAntigenMarkListener.onMarkedFinished(resultData);
 //		print("Max=" + Max);
 	}
 
@@ -548,7 +562,7 @@ public class DCAImp {
 			titles[i] = titles[i].trim();
 			titleMap.put(titles[i], i);
 		}
-		System.out.println(titleMap);
+		print(titleMap);
 		dataList = new ArrayList<String>(10000);
 		int count = 0;
 		while ((line = br.readLine()) != null) {
@@ -643,7 +657,7 @@ public class DCAImp {
 				}
 
 				@Override
-				public void onMarkedFinished() {
+				public void onMarkedFinished(ResultData data) {
 
 				}
 			});

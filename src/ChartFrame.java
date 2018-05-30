@@ -109,7 +109,7 @@ public class ChartFrame extends JFrame {
 			}
 
 			@Override
-			public void onMarkedFinished() {
+			public void onMarkedFinished(DCAImp.ResultData data) {
 				validate();
 			}
 
