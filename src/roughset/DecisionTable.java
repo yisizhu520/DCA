@@ -85,10 +85,14 @@ public class DecisionTable {
                 for (int i = 0; i < condition.size(); i++) {
                     System.out.print(conditionArray[condition.get(i)] + ",");
                 }
-                String PAMP="";
-//                List<Integer> copyCondition = copyPropertyList(condition);
-                for(int j=0;j<condition.size();j++) {//计算去除每个属性后，依赖值的变化
-                	
+                System.out.println("");
+                float basicAttrDepens = (float) getPOS(condition).size() / data.size();
+                for (int i = 0; i < condition.size(); i++) {
+                    List<Integer> copyCondition = copyPropertyList(condition);
+                    copyCondition.remove(i);
+                    float attrDepens = (float) getPOS(copyCondition).size() / data.size();
+                    float diff = basicAttrDepens - attrDepens;
+                    System.out.println(conditionArray[condition.get(i)] + " 的权重是 "+diff);
                 }
                 return;
             }
