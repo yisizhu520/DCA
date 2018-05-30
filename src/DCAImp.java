@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +24,13 @@ public class DCAImp {
 	private static final boolean printLog = true;
 
 	// FIXME 选取特定的一些列来计算PAMP，SS，DS
-	private static final String[] COLUMNS_TO_CAL = { "same_srv_rate",
-			"dst_host_srv_count", "same_srv_rate" };
-
+//	private static final String[] COLUMNS_TO_CAL = {"count","src_bytes","dst_host_same_src_port_rate","dst_host_srv_serror_rate","dst_host_srv_diff_host_rate"};
+	private static final String[] COLUMNS_TO_CAL = {"serror_rate","count","dst_host_same_src_port_rate","dst_host_srv_rerror_rate","dst_host_same_srv_rate","src_bytes"};
 	// TODO 随机取1W条数据集
 	public static final int RANDOM_DATA_COUNT = 10000;
 
 	// TODO 能够采集一组抗原（随机挑选n（没想好几行）行未标记的数据）
-	public static final int CHOOSE_ANTIGEN_COUNT = 100;
+	public static final int CHOOSE_ANTIGEN_COUNT = 10;
 	/**
 	 * 判定阈值
 	 */
@@ -38,73 +38,172 @@ public class DCAImp {
 	/**
 	 * 异常阈值
 	 */
-	public static final float EXCEPTION_THRESHOLD = 0.6f;
+	public static float EXCEPTION_THRESHOLD;
 
+	public static float MaxCSM=Float.NEGATIVE_INFINITY;
+	public static float MinCSM=Float.POSITIVE_INFINITY;
+	public static float MaxPAMP=Float.NEGATIVE_INFINITY;
+	public static float MinPAMP=Float.POSITIVE_INFINITY;
+	public static float MaxDS=Float.NEGATIVE_INFINITY;
+	public static float MinDS=Float.POSITIVE_INFINITY;
+	public static float MaxSS=Float.NEGATIVE_INFINITY;
+	public static float MinSS=Float.POSITIVE_INFINITY;
 	private void print(String msg) {
 		if (printLog) {
 			System.out.println(msg);
 		}
 	}
-
+	static float Max;
 	private void initMigrationValue() {
-		// mMigrationThreshold = new Random().nextInt(11) + 30;
-		mMigrationThreshold = 1;
+//		mMigrationThreshold = (float)(new Random().nextInt(2250000)+1125000)/100000;
+//		mMigrationThreshold = (float)(new Random().nextInt(4900000)+200000)/100000;
+		mMigrationThreshold = (float)new Random().nextInt(157)+5;
+//		mMigrationThreshold = 10;
+//		Max=(MaxPAMP*mWeightMatrix[0][0]+MaxDS*mWeightMatrix[0][1]+MaxSS*mWeightMatrix[0][2])/3/2;
+//		mMigrationThreshold = (float)new Random().nextInt((int)Max)+Max/2;
 	}
 
 	private void initWeightMatrix() {
 		// CSM权值列
-		mWeightMatrix[0][0] = 2;
-		mWeightMatrix[0][1] = 1;
-		mWeightMatrix[0][2] = 2;
+		mWeightMatrix[0][0] = (float)2;//PAMP
+		mWeightMatrix[0][1] = (float)1;//DS
+		mWeightMatrix[0][2] = (float)2;//SS
 		// SEMI权值列
-		mWeightMatrix[1][0] = 0;
-		mWeightMatrix[1][1] = 0;
-		mWeightMatrix[1][2] = 3;
-		// SS权值列
-		mWeightMatrix[2][0] = 2;
-		mWeightMatrix[2][1] = 1;
-		mWeightMatrix[2][2] = -2;
+		mWeightMatrix[1][0] = (float)-0.02;
+		mWeightMatrix[1][1] = (float)-0.01;
+		mWeightMatrix[1][2] = (float)3.5;
+		// MAT权值列
+		mWeightMatrix[2][0] = (float)2;
+		mWeightMatrix[2][1] = (float)1;
+		mWeightMatrix[2][2] = (float)-0.6;
 	}
 
 	/**
-	 * PAMP、SS：TODO 选择某些属性计算PAMP和SS。 TODO 满足某个条件（表明绝对异常），则PAMP值为10，SS=0；
+	 * PAMP、SS：TODO 选择某些属性计算PAMP和SS。 TODO 满足某个条件（表明绝对异常），则PAMP为与均值的绝对值；
 	 * 则PAMP值为0，SS=10；
 	 */
 	private void calculatePAMPAndSS() {
+		float count1=calAvg("serror_rate");//中位数
+		float count2=calAvg("count");//中位数
+//		float count3=calAvg("dst_host_rerror_rate");//中位数
+//		float count4=calAvg("hot");//中位数
 		for (int i = 0; i < mAntigenArray.length; i++) {
+			int num1=titleMap.get("serror_rate");
+			int num2=titleMap.get("count");
+//			int num3=titleMap.get("dst_host_rerror_rate");
+//			int num4=titleMap.get("hot");
+			float value1=mAntigenArray[i][num1]-count1;
+			float value2=mAntigenArray[i][num2]-count2;
+//			float value3=mAntigenArray[i][num3]-count3;
+//			float value4=mAntigenArray[i][num4]-count4;
 			// FIXME 修改PAMP和SS计算的判断条件
-			if (new Random().nextBoolean()) {
-				mPAMPArray[i] = 10;
+			if (value1>0 || value2>0) {
+				float count5=0;
+				if(value1>0) {
+					mPAMPArray[i]+=value1;
+					count5++;
+				}
+				if(value2>0) {
+					mPAMPArray[i]+=value2;
+					count5++;
+				}
+//				if(value3>0) {
+//					mPAMPArray[i]+=value3;
+//					count5++;
+//				}
+//				if(value4>0) {
+//					mPAMPArray[i]+=value4;
+//					count5++;
+//				}
+				mPAMPArray[i]=(float)mPAMPArray[i]/count5;
 				mSSArray[i] = 0;
-			} else {
+			} else{
 				mPAMPArray[i] = 0;
-				mSSArray[i] = 10;
+				mSSArray[i] = (float)Math.abs(value1+value2)/2;
+			}
+			if(mPAMPArray[i]>MaxPAMP) {
+				MaxPAMP=mPAMPArray[i];
+			}
+			if(mPAMPArray[i]<MinPAMP) {
+				MinPAMP=mPAMPArray[i];
+			}
+			if(mSSArray[i]>MaxSS) {
+				MaxSS=mSSArray[i];
+			}
+			if(mSSArray[i]<MinSS) {
+				MinSS=mSSArray[i];
 			}
 		}
+		print(mPAMPArray.toString());
+		print(mSSArray.toString());
 	}
-
+	private float calMedian(String columnName) {
+//		float sum=0;
+		int count=titleMap.get(columnName.trim());
+		float[] temp=new float[mAntigenArray.length];
+		for(int i=0; i < mAntigenArray.length; i++) {
+			temp[i]=mAntigenArray[i][count];
+		}
+		Arrays.sort(temp);
+		float result;
+		if(temp.length%2==0) {
+			result=(float)(temp[temp.length/2]+temp[temp.length/2-1])/2;
+		}else {
+			result=(float)(Math.floor(temp[temp.length/2]));
+		}
+		return result;
+	}
+	private float calAvg(String columnName) {
+		float sum=0;
+		int count=titleMap.get(columnName.trim());
+//		float[] temp=new float[mAntigenArray.length];
+		for(int i=0; i < mAntigenArray.length; i++) {
+			sum+=mAntigenArray[i][count];
+		}
+//		float result;
+//		if(temp.length%2==0) {
+//			result=(float)(temp[temp.length/2]+temp[temp.length/2-1])/2;
+//		}else {
+//			result=(float)(Math.floor(temp[temp.length/2]));
+//		}
+		return sum/mAntigenArray.length;
+	}
 	private void calculateDS() {
 		// 计算方式为：属性与其均值差的平均（((c1-avg(c1)+(c2-avg(c2)+(c3-avg(c3))/3)），不局限于三个属性
 		float[] avgArray = new float[COLUMNS_TO_CAL.length];
 		for (int i = 0; i < avgArray.length; i++) {
 			float sum = 0;
+			int count=0;
 			for (int j = 0; j < mAntigenArray.length; j++) {
 				int cloumn = titleMap.get(COLUMNS_TO_CAL[i].trim());
-				sum += mAntigenArray[j][cloumn];
+				if(mAntigenArray[j][42]==10) {
+					sum += mAntigenArray[j][cloumn];
+					count++;
+				}
 			}
-			avgArray[i] = sum / mAntigenArray.length;
+			avgArray[i] = sum / count;
 		}
+//		System.out.println(avgArray);
 
-		// 归一化处理
 		for (int k = 0; k < mAntigenArray.length; k++) {
-			float[] propertyArray = new float[avgArray.length];// 存放每条抗原指定的属性的归一化结果
+			float[] propertyArray = new float[avgArray.length];
 			for (int m = 0; m < avgArray.length; m++) {
 				int cloumn = titleMap.get(COLUMNS_TO_CAL[m].trim());
-				float value = mAntigenArray[k][cloumn] - avgArray[m];
+				float value = Math.abs(mAntigenArray[k][cloumn] - avgArray[m]);
+//				if(value<0) {
+//					
+//				}
 				propertyArray[m] = value;
 			}
 			mDSArray[k] = getAvgValue(propertyArray);
+			if(mDSArray[k]>MaxDS) {
+				MaxDS=mDSArray[k];
+			}
+			if(mDSArray[k]<MinDS) {
+				MinDS=mDSArray[k];
+			}
 		}
+		print(mDSArray.toString());
 	}
 
 	private float[][] mAntigenArray;
@@ -177,22 +276,23 @@ public class DCAImp {
 		return antigenIndex;
 	}
 
-	List<Float> csmList;
+//	List<Float> csmList;
 
-	private void evalMigrationValue() {
-		float sum = 0;
-		for (int i = 0; i < csmList.size(); i++) {
-			sum += csmList.get(i);
-		}
-		float value = sum / csmList.size();
-		print("CSM 迁移值--" + value);
-	}
+//	private void evalMigrationValue() {
+//		float sum = 0;
+//		for (int i = 0; i < csmList.size(); i++) {
+//			sum += csmList.get(i);
+//		}
+//		float value = sum / csmList.size();
+//		
+//		print("CSM 迁移值--" + value);
+//	}
 
 	public void start() {
 		initWeightMatrix();
 		calculatePAMPAndSS();
 		calculateDS();
-		csmList = new ArrayList<Float>();
+//		csmList = new ArrayList<Float>();
 		boolean stopFlag = false;
 		while (!mUnMarkIndexList.isEmpty() && !stopFlag) {
 
@@ -203,9 +303,10 @@ public class DCAImp {
 					CHOOSE_ANTIGEN_COUNT);
 			// 判断CSM与阈值
 			int calCount = 0;
+			
 			while (cell.CSM <= mMigrationThreshold) {
 				calCount++;
-
+				print("CSM="+cell.CSM);
 				// 处理最后几个未标记的抗原，或者运行了很多很多次几乎死循环的情况
 				if (mUnMarkIndexList.size() <= CHOOSE_ANTIGEN_COUNT || calCount == Integer.MAX_VALUE) {
 					cell = new DCCell();
@@ -244,14 +345,14 @@ public class DCAImp {
 							ar.ID = (int) mAntigenArray[index][0];
 							ar.MCAV = ratio;
 							if (ratio > EXCEPTION_THRESHOLD) {// 超过阈值，计算MCAV
-								ar.status = 1;
+								ar.status = 10;
 							} else {
 								ar.status = 0;
 							}
 							// 判断是否是误判漏判的
-							// if (mAntigenArray[index][42] != ar.status) {
-							// ar.status = 2;
-							// }
+//							 if (mAntigenArray[index][42] != ar.status) {
+//							 ar.status = 2;
+//							 }
 							mUnMarkIndexList.remove((Object) index);
 							print("第 " + index + " 条数据这一轮强行被标记了，(～￣▽￣)～ ，摸摸哒");
 							if (mAntigenMarkListener != null) {
@@ -282,11 +383,17 @@ public class DCAImp {
 				cell.MAT += mPAMPArray[index] * mWeightMatrix[2][0]
 						+ mDSArray[index] * mWeightMatrix[2][1]
 						+ mSSArray[index] * mWeightMatrix[2][2];
+				if(cell.CSM>MaxCSM) {
+					MaxCSM=cell.CSM;
+				}
+				if(cell.CSM<MinCSM) {
+					MinCSM=cell.CSM;
+				}
 			}
 			calCount = 0;
-			csmList.add(cell.CSM);
+//			csmList.add(cell.CSM);
 			// evalMigrationValue();
-			// 开始迁移
+//			 开始迁移
 			if (cell.SEMI >= cell.MAT) {
 				cell.status = STATUS_SEMI;
 			} else {
@@ -309,7 +416,7 @@ public class DCAImp {
 					ar.ID = (int) mAntigenArray[index][0];
 					ar.MCAV = ratio;
 					if (ratio > EXCEPTION_THRESHOLD) {// 超过阈值，计算MCAV
-						ar.status = 1;
+						ar.status = 10;
 					} else {
 						ar.status = 0;
 					}
@@ -329,9 +436,31 @@ public class DCAImp {
 		mAntigenMarkListener.onMarkedFinished();
 		print("标记完成");
 		String fileName = "kddcup_checked.csv";
+		float correct=0,falsePosi=0,trueNega=0;//falsePosi即不是有害，被标记为有害，trueNega即是有害，但是没有被标记出来
+		for(int i=0;i<mAntiResultArray.length;i++) {
+			String[] temp=mAntiResultArray[i].originData.split(",");
+			if(Float.parseFloat(temp[42])==mAntiResultArray[i].status) {
+				correct++;
+			}
+			if(Float.parseFloat(temp[42])!=mAntiResultArray[i].status && Float.parseFloat(temp[42])==10 && mAntiResultArray[i].status==0) {
+				trueNega++;
+			}
+			if(Float.parseFloat(temp[42])!=mAntiResultArray[i].status && Float.parseFloat(temp[42])==0 && mAntiResultArray[i].status==10) {
+				falsePosi++;
+			}
+		}
 		saveResult(fileName);
 		print("输出结果完成--" + fileName);
-
+		print("MaxCSM=" + MaxCSM);
+		print("MinCSM=" + MinCSM);
+		print("correct=" + correct/mAntiResultArray.length);
+		print("falsePosi=" + falsePosi/mAntiResultArray.length);
+		print("trueNega=" + trueNega/mAntiResultArray.length);
+		System.out.println("MCAV="+EXCEPTION_THRESHOLD);
+		print("MaxPAMP=" + MaxPAMP);
+		print("MaxSS=" + MaxSS);
+		print("MaxDS=" + MaxDS);
+//		print("Max=" + Max);
 	}
 
 	private void saveResult(String fileName) {
@@ -367,10 +496,12 @@ public class DCAImp {
 		titleStr = br.readLine();
 		titles = titleStr.split(",");
 		titleMap = new HashMap<String, Integer>();
+		
 		for (int i = 0; i < titles.length; i++) {
 			titles[i] = titles[i].trim();
 			titleMap.put(titles[i], i);
 		}
+		System.out.println(titleMap);
 		dataList = new ArrayList<String>(10000);
 		int count = 0;
 		while ((line = br.readLine()) != null) {
@@ -380,7 +511,7 @@ public class DCAImp {
 		br.close();
 
 		// 随机取10000条数据
-		dataList = getRandomData(dataList, RANDOM_DATA_COUNT);
+//		dataList = getRandomData(dataList, RANDOM_DATA_COUNT);
 
 		mAntigenArray = new float[dataList.size()][titles.length];
 		mPAMPArray = new float[dataList.size()];
@@ -401,7 +532,15 @@ public class DCAImp {
 		for (int i = 0; i < mAntigenArray.length; i++) {
 			mUnMarkIndexList.add(i);
 		}
-
+		float posi=0;
+		for(int i = 0; i < mAntigenArray.length; i++) {
+//			System.out.println(mAntigenArray[i][42]);
+			if(mAntigenArray[i][42]==10.0) {
+				posi++;
+			}
+		}
+		EXCEPTION_THRESHOLD=posi/mAntigenArray.length;
+		
 	}
 
 	private List<String> getRandomData(List<String> data, int randomDataCount) {
@@ -444,6 +583,27 @@ public class DCAImp {
 			sum += array[i];
 		}
 		return sum / array.length;
+	}
+	public static void main(String[] args) {
+		DCAImp imp = new DCAImp();
+		String filePath = "kddcup_normalization_0.7k.csv";
+		try {
+			imp.parseDataTxt(filePath);
+			imp.setOnAntigenMarkListener(new OnAntigenMarkListener() {
+				@Override
+				public void onAntigenMarked(AntigenResult result) {
+
+				}
+
+				@Override
+				public void onMarkedFinished() {
+
+				}
+			});
+			imp.start();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

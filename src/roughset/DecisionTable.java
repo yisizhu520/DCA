@@ -65,16 +65,30 @@ public class DecisionTable {
                     List<Element> attrPos = getPOS(propertySetCopy);
                     if (isPosSame(allAttrPos, attrPos)) {
                         condition.remove((Object) propertySet.get(i));
+                        for (int x = 0; x < condition.size(); x++) {
+                            System.out.print(conditionArray[condition.get(x)] + ",");
+                        }
                         flag = true;
                         break;
+                    }else {
+                    	if(i==propertySet.size()) {//当遍历完后发现没有可以约简的属性，则直接跳出
+                    		flag=true;
+                    		
+                    	}
                     }
                 }
             }
+            System.out.println("-------------");
             if (!flag) {
                 System.out.println(condition.size());
                 System.out.println("约简结束,剩下以下属性~");
                 for (int i = 0; i < condition.size(); i++) {
-                    System.out.print(conditionArray[condition.get(i)] + " ");
+                    System.out.print(conditionArray[condition.get(i)] + ",");
+                }
+                String PAMP="";
+//                List<Integer> copyCondition = copyPropertyList(condition);
+                for(int j=0;j<condition.size();j++) {//计算去除每个属性后，依赖值的变化
+                	
                 }
                 return;
             }
@@ -132,23 +146,24 @@ public class DecisionTable {
     }
 
     /**
-     * 获取该集合的子集，并按元素由多到少排序，
+     * 获取该集合去除一个元素的子集，并按元素由多到少排序，
      * @param set
      * @return
      */
     private static List<List<Integer>> getSubSet(List<Integer> set) {
         List<List<Integer>> result = new ArrayList<>();    //用来存放子集的集合，如{{},{1},{2},{1,2}}
         int length = set.size();
-        int num = length == 0 ? 0 : 1 << (length);    //2的n次方，若集合set为空，num为0；若集合set有4个元素，那么num为16.
+//        int num = length == 0 ? 0 : 1 << (length);    //2的n次方，若集合set为空，num为0；若集合set有4个元素，那么num为16.
         //从0到2^n-1（[00...00]到[11...11]）
-        for (int i = 0; i < num; i++) {
+        for (int i = 0; i < length; i++) {
             List<Integer> subSet = new ArrayList<>();
-            int index = i;
+//            int index = i;
+            
             for (int j = 0; j < length; j++) {
-                if ((index & 1) == 1) {        //每次判断index最低位是否为1，为1则把集合set的第j个元素放到子集中
+                if (j!=i) {        //每次判断index最低位是否为1，为1则把集合set的第j个元素放到子集中
                     subSet.add(set.get(j));
                 }
-                index >>= 1;        //右移一位
+//                index >>= 1;        //右移一位
             }
             if (!subSet.isEmpty() && subSet.size() >= 2) {
                 result.add(subSet);        //把子集存储起来
@@ -161,7 +176,7 @@ public class DecisionTable {
     }
 
     public static void main(String[] args) {
-        List<Integer> elements = Arrays.asList(0, 1, 2);
+        List<Integer> elements = Arrays.asList(0, 1, 2, 3);
         List<List<Integer>> result = getSubSet(elements);    //调用方法
         //输出结果
         for (List<Integer> subSet : result) {
