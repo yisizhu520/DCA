@@ -5,30 +5,30 @@ import java.util.Iterator;
 
 public class Main {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws CloneNotSupportedException {
-		// �����е����־���Ԫ�أ�Ԫ�飩�����
-		DecisionTable myTestDT = new DecisionTable("kddcup_1k_rs_test.dt");
+    /**
+     * @param args
+     */
+    public static void main(String[] args) throws CloneNotSupportedException {
+        // 集合中的数字就是元素（元组）的序号
+        DecisionTable myTestDT = new DecisionTable("kddcup_1k_rs_test.dt");
 
-		// ���������
-		ArrayList<String> core = myTestDT.core();
-		Iterator<String> itCore = core.iterator();
-		System.out.println("�������ǣ�");
-		while (itCore.hasNext()) {
-			System.out.print(itCore.next() + "  ");
-		}
-		System.out.println();
+        // 计算核属性
+        ArrayList<String> core = myTestDT.core();
+        Iterator<String> itCore = core.iterator();
+        System.out.println("核属性是：");
+        while (itCore.hasNext()) {
+            System.out.print(itCore.next() + "  ");
+        }
+        System.out.println();
 //
-//		// �������������Լ��
+//		// 基于正域的属性约简
 //		DecisionTable reductedDT = myTestDT.attributeReduct();
-//		System.out.println("�������������Լ�����ǣ�");
+//		System.out.println("基于正域的属性约简结果是：");
 //		reductedDT.print();
 
-		// ���������ȵ�����Լ��
-		DecisionTable reductedDTByRely = myTestDT.attributeReductByRely();
-		System.out.println("���������ȵ�����Լ�����ǣ�");
-		reductedDTByRely.print();
-	}
+        // 基于依赖度的属性约简
+        DecisionTable reductedDTByRely = myTestDT.attributeReductByRely();
+        System.out.println("基于依赖度的属性约简结果是：");
+        reductedDTByRely.print();
+    }
 }
