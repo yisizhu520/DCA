@@ -22,17 +22,17 @@ import org.jfree.util.StringUtils;
 public class DCAImp {
 
 	public static boolean printLog = true;
-	public static boolean needSaveResultFile = true;
+	public static boolean needSaveResultFile = false;
 
 	// FIXME 选取特定的一些列来计算PAMP，SS，DS
 //	private static final String[] COLUMNS_TO_CAL = {"count","src_bytes","dst_host_same_src_port_rate","dst_host_srv_serror_rate","dst_host_srv_diff_host_rate"};
 	//DS 粗糙集 1w条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_bytes","dst_host_srv_count","dst_host_diff_srv_rate","dst_host_srv_diff_host_rate"};
-	//DS xgboost 1w条 
+	//DS xgboost 1w条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_serror_rate","dst_host_same_src_port_rate","dst_host_srv_count","hot","dst_host_srv_diff_host_rate"};
 	//DS 粗糙集 5k条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_count","dst_host_diff_srv_rate","dst_host_srv_diff_host_rate","dst_host_srv_rerror_rate"};
-	//DS xgboost 5k条 
+	//DS xgboost 5k条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_serror_rate","dst_host_same_src_port_rate","src_bytes","hot","dst_host_srv_diff_host_rate"};
 	//DS 粗糙集 1k条
 	private static final String[] COLUMNS_TO_CAL = {"duration","dst_host_same_src_port_rate","dst_host_srv_rerror_rate"};
@@ -40,7 +40,7 @@ public class DCAImp {
 //	private static final String[] COLUMNS_TO_CAL = {"dst_bytes","hot","dst_host_srv_count","src_bytes","dst_host_same_src_port_rate","srv_serror_rate","duration"};
 	//DS 粗糙集 0.5k条
 //	private static final String[] COLUMNS_TO_CAL = {"duration","dst_host_same_src_port_rate","dst_host_srv_rerror_rate"};
-	//DS xgboost 0.5k条 
+	//DS xgboost 0.5k条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_host_count","src_bytes","dst_host_same_srv_rate","dst_host_rerror_rate"};
 	// TODO 随机取1W条数据集
 	public static final int RANDOM_DATA_COUNT = 10000;
@@ -209,7 +209,7 @@ public class DCAImp {
 		//粗糙集 1w条
 //		float count1=calAvg("dst_host_same_src_port_rate");//中位数	
 		//粗糙集 5k条
-//		float count1=calAvg("srv_count");//中位数	
+//		float count1=calAvg("srv_count");//中位数
 		//粗糙集 1k条
 		float count1=calAvg("dst_host_srv_count");//中位数
 		//粗糙集 0.5k条
@@ -331,7 +331,7 @@ public class DCAImp {
 			int count=0;
 			for (int j = 0; j < mAntigenArray.length; j++) {
 				int cloumn = titleMap.get(COLUMNS_TO_CAL[i].trim());
-				if(mAntigenArray[j][42]==10) {
+				if(mAntigenArray[j][titles.length-1]==10) {
 					sum += mAntigenArray[j][cloumn];
 					count++;
 				}
@@ -600,13 +600,13 @@ public class DCAImp {
 		float correct=0,falsePosi=0,trueNega=0;//falsePosi即不是有害，被标记为有害，trueNega即是有害，但是没有被标记出来
 		for(int i=0;i<mAntiResultArray.length;i++) {
 			String[] temp=mAntiResultArray[i].originData.split(",");
-			if(Float.parseFloat(temp[42])==mAntiResultArray[i].status) {
+			if(Float.parseFloat(temp[titles.length-1])==mAntiResultArray[i].status) {
 				correct++;
 			}
-			if(Float.parseFloat(temp[42])!=mAntiResultArray[i].status && Float.parseFloat(temp[42])==10 && mAntiResultArray[i].status==0) {
+			if(Float.parseFloat(temp[titles.length-1])!=mAntiResultArray[i].status && Float.parseFloat(temp[titles.length-1])==10 && mAntiResultArray[i].status==0) {
 				trueNega++;
 			}
-			if(Float.parseFloat(temp[42])!=mAntiResultArray[i].status && Float.parseFloat(temp[42])==0 && mAntiResultArray[i].status==10) {
+			if(Float.parseFloat(temp[titles.length-1])!=mAntiResultArray[i].status && Float.parseFloat(temp[titles.length-1])==0 && mAntiResultArray[i].status==10) {
 				falsePosi++;
 			}
 		}
@@ -703,7 +703,7 @@ public class DCAImp {
 		float posi=0;
 		for(int i = 0; i < mAntigenArray.length; i++) {
 //			System.out.println(mAntigenArray[i][42]);
-			if(mAntigenArray[i][42]==10.0) {
+			if(mAntigenArray[i][titles.length-1]==10.0) {
 				posi++;
 			}
 		}
