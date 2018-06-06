@@ -35,7 +35,7 @@ public class DCAImp {
 	//DS xgboost 5k条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_serror_rate","dst_host_same_src_port_rate","src_bytes","hot","dst_host_srv_diff_host_rate"};
 	//DS 粗糙集 1k条
-	private static final String[] COLUMNS_TO_CAL = {"duration","dst_host_same_src_port_rate","dst_host_srv_rerror_rate"};
+	private static final String[] COLUMNS_TO_CAL = {"dst_host_same_src_port_rate","dst_host_srv_rerror_rate","dst_host_srv_diff_host_rate"};
 	//DS xgboost 1k条 
 //	private static final String[] COLUMNS_TO_CAL = {"dst_bytes","hot","dst_host_srv_count","src_bytes","dst_host_same_src_port_rate","srv_serror_rate","duration"};
 	//DS 粗糙集 0.5k条
@@ -78,7 +78,7 @@ public class DCAImp {
 		//粗糙集 5k条
 //		mMigrationThreshold = (float)new Random().nextInt(133);
 		//粗糙集 1k条
-		mMigrationThreshold = (float)new Random().nextInt(147)+1;
+		mMigrationThreshold = (float)new Random().nextInt(135)+1;
 		//粗糙集 0.5k条
 //		mMigrationThreshold = (float)new Random().nextInt(147)+1;
 		//xgboost 1w条
@@ -116,7 +116,7 @@ public class DCAImp {
 //		// SEMI权值列
 //		mWeightMatrix[1][0] = (float)0;
 //		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)2;
+//		mWeightMatrix[1][2] = (float)1.9;
 //		//  MAT权值列
 //		mWeightMatrix[2][0] = (float)4;
 //		mWeightMatrix[2][1] = (float)2;
@@ -129,11 +129,11 @@ public class DCAImp {
 		// SEMI权值列
 		mWeightMatrix[1][0] = (float)0;
 		mWeightMatrix[1][1] = (float)0;
-		mWeightMatrix[1][2] = (float)2.5;
+		mWeightMatrix[1][2] = (float)0.8;
 		//  MAT权值列
-		mWeightMatrix[2][0] = (float)3.5;
-		mWeightMatrix[2][1] = (float)1.75;
-		mWeightMatrix[2][2] = (float)0;
+		mWeightMatrix[2][0] = (float)2;
+		mWeightMatrix[2][1] = (float)1;
+		mWeightMatrix[2][2] = (float)-0.3;
 		//粗糙集权值矩阵 0.5k条
 //		CSM权值列
 //		mWeightMatrix[0][0] = (float)2;//PAMP
@@ -229,7 +229,7 @@ public class DCAImp {
 			//粗糙集 1w条
 //			int num1=titleMap.get("dst_host_same_src_port_rate");
 			//粗糙集 5k条
-//			int num1=titleMap.get("dst_host_same_src_port_rate");
+//			int num1=titleMap.get("srv_count");
 			//粗糙集 1k条
 			int num1=titleMap.get("dst_host_srv_count");
 			//粗糙集 0.5k条
@@ -620,9 +620,9 @@ public class DCAImp {
 		print("falsePosi=" + falsePosi/mAntiResultArray.length);
 		print("trueNega=" + trueNega/mAntiResultArray.length);
 		print("MCAV="+EXCEPTION_THRESHOLD);
-//		print("MaxPAMP=" + MaxPAMP);
-//		print("MaxSS=" + MaxSS);
-//		print("MaxDS=" + MaxDS);
+		print("MaxPAMP=" + MaxPAMP);
+		print("MaxSS=" + MaxSS);
+		print("MaxDS=" + MaxDS);
 		ResultData resultData = new ResultData();
 		resultData.correct = correct/mAntiResultArray.length;
 		resultData.falsePosi = falsePosi/mAntiResultArray.length;
@@ -756,7 +756,7 @@ public class DCAImp {
 		DCAImp imp = new DCAImp();
 //		String filePath = "kddcup_1w_test.csv";
 //		String filePath = "kddcup_5k_rs_test_10.csv";
-		String filePath = "kddcup_1k_rs_test_10.csv";
+		String filePath = "kddcup_1k_rs_test2_10.csv";
 //		String filePath = "kddcup_0.5k_rs_test_10.csv";
 		try {
 			imp.parseDataTxt(filePath);
