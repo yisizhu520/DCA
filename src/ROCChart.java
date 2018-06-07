@@ -43,137 +43,12 @@ public class ROCChart {
     static float Max;
 
     private void initMigrationValue() {
-//		mMigrationThreshold = (float)(new Random().nextInt(2250000)+1125000)/100000;
-//		mMigrationThreshold = (float)(new Random().nextInt(4900000)+200000)/100000;
-        //粗糙集 1w条
-//		mMigrationThreshold = (float)new Random().nextInt(127);
-        //粗糙集 5k条
-//		mMigrationThreshold = (float)new Random().nextInt(133);
-        //粗糙集 1k条
-        mMigrationThreshold = (float) new Random().nextInt(135) + 1;
-        //粗糙集 0.5k条
-//		mMigrationThreshold = (float)new Random().nextInt(147)+1;
-        //xgboost 1w条
-//		mMigrationThreshold = (float)new Random().nextInt(63);
-        //xgboost 5k条
-//		mMigrationThreshold = (float)new Random().nextInt(92)+1;
-        //xgboost 1k条
-//		mMigrationThreshold = (float)new Random().nextInt(93)+1;
-        //xgboost 0.5k条
-//		mMigrationThreshold = (float)new Random().nextInt(116)+3;
-//		mMigrationThreshold = 10;
-//		Max=(MaxPAMP*mWeightMatrix[0][0]+MaxDS*mWeightMatrix[0][1]+MaxSS*mWeightMatrix[0][2])/3/2;
-//		mMigrationThreshold = (float)new Random().nextInt((int)Max)+Max/2;
+        mMigrationThreshold = mTestData.getRandomMigrationThreshold();
     }
 
     private void initWeightMatrix() {
-        //粗糙集权值矩阵 一万条
-//		// CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3.5;
-//		// MAT权值列
-//		mWeightMatrix[2][0] = (float)7;
-//		mWeightMatrix[2][1] = (float)3.5;
-//		mWeightMatrix[2][2] = (float)0;
-        //粗糙集权值矩阵 5k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)1.9;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)4;
-//		mWeightMatrix[2][1] = (float)2;
-//		mWeightMatrix[2][2] = (float)-0;
-        //粗糙集权值矩阵 1k条
-//		CSM权值列
-        mWeightMatrix[0][0] = (float) 2;//PAMP
-        mWeightMatrix[0][1] = (float) 1;//DS
-        mWeightMatrix[0][2] = (float) 2;//SS
-        // SEMI权值列
-        mWeightMatrix[1][0] = (float) 0;
-        mWeightMatrix[1][1] = (float) 0;
-        mWeightMatrix[1][2] = (float) 0.8;
-        //  MAT权值列
-        mWeightMatrix[2][0] = (float) 2;
-        mWeightMatrix[2][1] = (float) 1;
-        mWeightMatrix[2][2] = (float) -0.3;
-        //粗糙集权值矩阵 0.5k条
-//		CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)2.5;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)4;
-//		mWeightMatrix[2][1] = (float)2;
-//		mWeightMatrix[2][2] = (float)0;
-        //xgboost权值矩阵 一万条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)0;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3;
-//		// MAT权值列
-//		mWeightMatrix[2][0] = (float)3;
-//		mWeightMatrix[2][1] = (float)1.5;
-//		mWeightMatrix[2][2] = (float)-0.5;
-        //xgboost 5k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3.6;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)3.6;
-//		mWeightMatrix[2][1] = (float)1.8;
-//		mWeightMatrix[2][2] = (float)-1;
-        //xgboost 1k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)1.3;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)2;
-//		mWeightMatrix[2][1] = (float)1;
-//		mWeightMatrix[2][2] = (float)0;
-        //xgboost 0.5k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)-0.06;
-//		mWeightMatrix[1][1] = (float)-0.03;
-//		mWeightMatrix[1][2] = (float)3;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)5;
-//		mWeightMatrix[2][1] = (float)2.5;
-//		mWeightMatrix[2][2] = (float)-0.25;
+        mWeightMatrix =  mTestData.weightMatrix;
     }
-
-
 
     private float calMedian(String columnName) {
 //		float sum=0;
@@ -210,12 +85,12 @@ public class ROCChart {
 
     private void calculateDS() {
         // 计算方式为：属性与其均值差的平均（((c1-avg(c1)+(c2-avg(c2)+(c3-avg(c3))/3)），不局限于三个属性
-        float[] avgArray = new float[COLUMNS_TO_CAL.length];
+        float[] avgArray = new float[mTestData.columns.length];
         for (int i = 0; i < avgArray.length; i++) {
             float sum = 0;
             int count = 0;
             for (int j = 0; j < mAntigenArray.length; j++) {
-                int cloumn = titleMap.get(COLUMNS_TO_CAL[i].trim());
+                int cloumn = titleMap.get(mTestData.columns[i].trim());
                 if (mAntigenArray[j][titles.length - 1] == 10) {
                     sum += mAntigenArray[j][cloumn];
                     count++;
@@ -228,7 +103,7 @@ public class ROCChart {
         for (int k = 0; k < mAntigenArray.length; k++) {
             float[] propertyArray = new float[avgArray.length];
             for (int m = 0; m < avgArray.length; m++) {
-                int cloumn = titleMap.get(COLUMNS_TO_CAL[m].trim());
+                int cloumn = titleMap.get(mTestData.columns[m].trim());
                 float value = Math.abs(mAntigenArray[k][cloumn] - avgArray[m]);
 //				if(value<0) {
 //
@@ -303,8 +178,10 @@ public class ROCChart {
         public float trueNega;
     }
 
-    public ROCChart() {
+    TestData mTestData;
 
+    public ROCChart(TestData data) {
+        mTestData = data;
     }
 
     public AntigenResult[] getResultArray() {
@@ -322,17 +199,6 @@ public class ROCChart {
         return antigenIndex;
     }
 
-//	List<Float> csmList;
-
-//	private void evalMigrationValue() {
-//		float sum = 0;
-//		for (int i = 0; i < csmList.size(); i++) {
-//			sum += csmList.get(i);
-//		}
-//		float value = sum / csmList.size();
-//		
-//		print("CSM 迁移值--" + value);
-//	}
 
     public void start() {
         initWeightMatrix();
@@ -657,146 +523,7 @@ public class ROCChart {
             "kddcup_0.5k_rs_test_10.csv"
     };
 
-    private void initMigrationValue() {
-        //粗糙集 5k条
-//		mMigrationThreshold = (float)new Random().nextInt(133);
-        //粗糙集 1k条
-        mMigrationThreshold = (float) new Random().nextInt(135) + 1;
-        //粗糙集 0.5k条
-//		mMigrationThreshold = (float)new Random().nextInt(147)+1;
-        //xgboost 1w条
-//		mMigrationThreshold = (float)new Random().nextInt(63);
-        //xgboost 5k条
-//		mMigrationThreshold = (float)new Random().nextInt(92)+1;
-        //xgboost 1k条
-//		mMigrationThreshold = (float)new Random().nextInt(93)+1;
-        //xgboost 0.5k条
-//		mMigrationThreshold = (float)new Random().nextInt(116)+3;
-//		mMigrationThreshold = 10;
-//		Max=(MaxPAMP*mWeightMatrix[0][0]+MaxDS*mWeightMatrix[0][1]+MaxSS*mWeightMatrix[0][2])/3/2;
-//		mMigrationThreshold = (float)new Random().nextInt((int)Max)+Max/2;
-    }
 
-    private void initWeightMatrix() {
-        //粗糙集权值矩阵 一万条
-//		// CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3.5;
-//		// MAT权值列
-//		mWeightMatrix[2][0] = (float)7;
-//		mWeightMatrix[2][1] = (float)3.5;
-//		mWeightMatrix[2][2] = (float)0;
-        //粗糙集权值矩阵 5k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)1.9;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)4;
-//		mWeightMatrix[2][1] = (float)2;
-//		mWeightMatrix[2][2] = (float)-0;
-        //粗糙集权值矩阵 1k条
-//		CSM权值列
-        mWeightMatrix[0][0] = (float) 2;//PAMP
-        mWeightMatrix[0][1] = (float) 1;//DS
-        mWeightMatrix[0][2] = (float) 2;//SS
-        // SEMI权值列
-        mWeightMatrix[1][0] = (float) 0;
-        mWeightMatrix[1][1] = (float) 0;
-        mWeightMatrix[1][2] = (float) 0.8;
-        //  MAT权值列
-        mWeightMatrix[2][0] = (float) 2;
-        mWeightMatrix[2][1] = (float) 1;
-        mWeightMatrix[2][2] = (float) -0.3;
-        //粗糙集权值矩阵 0.5k条
-//		CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)2.5;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)4;
-//		mWeightMatrix[2][1] = (float)2;
-//		mWeightMatrix[2][2] = (float)0;
-        //xgboost权值矩阵 一万条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)0;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3;
-//		// MAT权值列
-//		mWeightMatrix[2][0] = (float)3;
-//		mWeightMatrix[2][1] = (float)1.5;
-//		mWeightMatrix[2][2] = (float)-0.5;
-        //xgboost 5k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3.6;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)3.6;
-//		mWeightMatrix[2][1] = (float)1.8;
-//		mWeightMatrix[2][2] = (float)-1;
-        //xgboost 1k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)1.3;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)2;
-//		mWeightMatrix[2][1] = (float)1;
-//		mWeightMatrix[2][2] = (float)0;
-        //xgboost 0.5k条
-        // CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)-0.06;
-//		mWeightMatrix[1][1] = (float)-0.03;
-//		mWeightMatrix[1][2] = (float)3;
-//		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)5;
-//		mWeightMatrix[2][1] = (float)2.5;
-//		mWeightMatrix[2][2] = (float)-0.25;
-    }
-
-    //粗糙集权值矩阵 一万条
-//		// CSM权值列
-//		mWeightMatrix[0][0] = (float)2;//PAMP
-//		mWeightMatrix[0][1] = (float)1;//DS
-//		mWeightMatrix[0][2] = (float)2;//SS
-//		// SEMI权值列
-//		mWeightMatrix[1][0] = (float)0;
-//		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3.5;
-//		// MAT权值列
-//		mWeightMatrix[2][0] = (float)7;
-//		mWeightMatrix[2][1] = (float)3.5;
-//		mWeightMatrix[2][2] = (float)0;
 
     /**
      * PAMP、SS：TODO 选择某些属性计算PAMP和SS。 TODO 满足某个条件（表明绝对异常），则PAMP为与均值的绝对值；
@@ -909,7 +636,7 @@ public class ROCChart {
     public static void main(String[] args) {
 
         List<TestData> testDataList = new ArrayList<>(6);
-        //粗糙集权值矩阵 一万条
+        //粗糙集权值矩阵 1w条
         TestData RS1W = new TestData();
         RS1W.name = "RS_1W";
         RS1W.filePath = FILE_PATHS[0];
@@ -931,12 +658,74 @@ public class ROCChart {
         RS5K.migrationThresholdRange = new int[]{0, 132};
         RS5K.weightMatrix = new float[][]{
                 {2, 1, 2},
-                {0, 0, 3.5f},
-                {7, 3.5f, 0}
+                {0, 0, 1.9f},
+                {4, 2f, 0}
         };
-        RS5K.PAMPAndSSColumns = new String[]{"dst_host_same_src_port_rate"};
+        RS5K.PAMPAndSSColumns = new String[]{"srv_count"};
 
-        ROCChart imp = new ROCChart();
+        //粗糙集 1k条
+        TestData RS1K = new TestData();
+        RS1K.name = "RS_1K";
+        RS1K.filePath = FILE_PATHS[2];
+        RS1K.columns = COLUMNS_RS_1K;
+        RS1K.migrationThresholdRange = new int[]{1, 135};
+        RS1K.weightMatrix = new float[][]{
+                {2, 1, 2},
+                {0, 0, 0.8f},
+                {2, 1, -0.3f}
+        };
+        RS1K.PAMPAndSSColumns = new String[]{"dst_host_same_src_port_rate"};
+
+        //xgboost 1w条
+        TestData XG1W = new TestData();
+        XG1W.name = "XG_1W";
+        XG1W.filePath = FILE_PATHS[0];
+        XG1W.columns = COLUMNS_XG_1W;
+        XG1W.migrationThresholdRange = new int[]{0, 62};
+        XG1W.weightMatrix = new float[][]{
+                {2, 0, 2},
+                {0, 0, 3f},
+                {3, 1.5f, -0.5f}
+        };
+        XG1W.PAMPAndSSColumns = new String[]{"count","dst_bytes","src_bytes"};
+
+        //xgboost 5k条
+        TestData XG5K = new TestData();
+        XG5K.name = "XG_5K";
+        XG5K.filePath = FILE_PATHS[1];
+        XG5K.columns = COLUMNS_XG_5K;
+        XG5K.migrationThresholdRange = new int[]{1, 92};
+        XG5K.weightMatrix = new float[][]{
+                {2, 1, 2},
+                {0, 0, 3.6f},
+                {3.6f, 1.8f, -1f}
+        };
+        XG5K.PAMPAndSSColumns = new String[]{"count","src_bytes"};
+
+        //xgboost 1k条
+        TestData XG1K = new TestData();
+        XG1K.name = "XG_1K";
+        XG1K.filePath = FILE_PATHS[2];
+        XG1K.columns = COLUMNS_XG_1K;
+        XG1K.migrationThresholdRange = new int[]{1, 93};
+        XG1K.weightMatrix = new float[][]{
+                {2, 1, 2},
+                {0, 0, 1.3f},
+                {2, 1, 0}
+        };
+        XG1K.PAMPAndSSColumns = new String[]{"count"};
+
+        testDataList.add(RS1W);
+        testDataList.add(RS5K);
+        testDataList.add(RS1K);
+        testDataList.add(XG1W);
+        testDataList.add(XG5K);
+        testDataList.add(XG1K);
+
+        for(TestData data : testDataList){
+            ROCChart imp = new ROCChart(data);
+        }
+
         try {
             imp.parseDataTxt(filePath);
             imp.setOnAntigenMarkListener(new OnAntigenMarkListener() {
