@@ -1,5 +1,21 @@
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.StandardChartTheme;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jvnet.substance.SubstanceLookAndFeel;
+import org.jvnet.substance.watermark.SubstanceCopperplateEngravingWatermark;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * DCA算法实现类
@@ -47,7 +63,7 @@ public class ROCChart {
     }
 
     private void initWeightMatrix() {
-        mWeightMatrix =  mTestData.weightMatrix;
+        mWeightMatrix = mTestData.weightMatrix;
     }
 
     private float calMedian(String columnName) {
@@ -176,6 +192,8 @@ public class ROCChart {
         public float correct;
         public float falsePosi;
         public float trueNega;
+        public float FPR;
+        public float TPR;
     }
 
     TestData mTestData;
@@ -201,6 +219,7 @@ public class ROCChart {
 
 
     public void start() {
+        initData();
         initWeightMatrix();
         calculatePAMPAndSS();
         calculateDS();
@@ -348,16 +367,32 @@ public class ROCChart {
 
         print("标记完成");
         String fileName = "kddcup_checked.csv";
-        float correct = 0, falsePosi = 0, trueNega = 0;//falsePosi即不是有害，被标记为有害，trueNega即是有害，但是没有被标记出来
+        int TP = 0, FP = 0, FN = 0, TN = 0;
+        float correct = 0, trueNega = 0, falsePosi = 0;
         for (int i = 0; i < mAntiResultArray.length; i++) {
             String[] temp = mAntiResultArray[i].originData.split(",");
-            if (Float.parseFloat(temp[titles.length - 1]) == mAntiResultArray[i].status) {
+            float label = Float.parseFloat(temp[titles.length - 1]);
+            float mark = mAntiResultArray[i].status;
+            if (label == 10) {
+                if (mark == 10) {
+                    TP++;
+                } else {
+                    FN++;
+                }
+            } else {
+                if (mark == 10) {
+                    FP++;
+                } else {
+                    TN++;
+                }
+            }
+            if (label == mark) {
                 correct++;
             }
-            if (Float.parseFloat(temp[titles.length - 1]) != mAntiResultArray[i].status && Float.parseFloat(temp[titles.length - 1]) == 10 && mAntiResultArray[i].status == 0) {
+            if (label != mark && label == 10 && mark == 0) {
                 trueNega++;
             }
-            if (Float.parseFloat(temp[titles.length - 1]) != mAntiResultArray[i].status && Float.parseFloat(temp[titles.length - 1]) == 0 && mAntiResultArray[i].status == 10) {
+            if (label != mark && label == 0 && mark == 10) {
                 falsePosi++;
             }
         }
@@ -378,8 +413,18 @@ public class ROCChart {
         resultData.correct = correct / mAntiResultArray.length;
         resultData.falsePosi = falsePosi / mAntiResultArray.length;
         resultData.trueNega = trueNega / mAntiResultArray.length;
-        mAntigenMarkListener.onMarkedFinished(resultData);
+        resultData.TPR = (float) TP / (TP + FN);
+        resultData.FPR = (float) FP / (FP + TN);
+        if (mAntigenMarkListener != null) {
+            mAntigenMarkListener.onMarkedFinished(resultData);
+        }
+        mResultDataList.add(resultData);
 //		print("Max=" + Max);
+    }
+
+
+    public List<ResultData> getResult() {
+        return mResultDataList;
     }
 
     private void saveResult(String fileName) {
@@ -428,10 +473,9 @@ public class ROCChart {
             count++;
         }
         br.close();
+    }
 
-        // 随机取10000条数据
-//		dataList = getRandomData(dataList, RANDOM_DATA_COUNT);
-
+    private void initData() {
         mAntigenArray = new float[dataList.size()][titles.length];
         mPAMPArray = new float[dataList.size()];
         mSSArray = new float[dataList.size()];
@@ -440,6 +484,7 @@ public class ROCChart {
         mJudgeExceptionCountArray = new int[dataList.size()];
         mAntiResultArray = new AntigenResult[dataList.size()];
         mUnMarkIndexList = new ArrayList<Integer>(dataList.size());
+
         // mAntiResultList = new ArrayList<AntigenResult>(dataList.size());
 
         for (int i = 0; i < dataList.size(); i++) {
@@ -458,7 +503,6 @@ public class ROCChart {
                 posi++;
             }
         }
-
     }
 
     private List<String> getRandomData(List<String> data, int randomDataCount) {
@@ -520,9 +564,8 @@ public class ROCChart {
     private static final String[] FILE_PATHS = {
             "kddcup_1w_test.csv",
             "kddcup_5k_rs_test_10.csv",
-            "kddcup_0.5k_rs_test_10.csv"
+            "kddcup_1k_rs_test2_10.csv"
     };
-
 
 
     /**
@@ -632,8 +675,9 @@ public class ROCChart {
 
     }
 
+    public static List<ResultData> mResultDataList = null;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
         List<TestData> testDataList = new ArrayList<>(6);
         //粗糙集权值矩阵 1w条
@@ -687,7 +731,7 @@ public class ROCChart {
                 {0, 0, 3f},
                 {3, 1.5f, -0.5f}
         };
-        XG1W.PAMPAndSSColumns = new String[]{"count","dst_bytes","src_bytes"};
+        XG1W.PAMPAndSSColumns = new String[]{"count", "dst_bytes", "src_bytes"};
 
         //xgboost 5k条
         TestData XG5K = new TestData();
@@ -700,7 +744,7 @@ public class ROCChart {
                 {0, 0, 3.6f},
                 {3.6f, 1.8f, -1f}
         };
-        XG5K.PAMPAndSSColumns = new String[]{"count","src_bytes"};
+        XG5K.PAMPAndSSColumns = new String[]{"count", "src_bytes"};
 
         //xgboost 1k条
         TestData XG1K = new TestData();
@@ -722,26 +766,84 @@ public class ROCChart {
         testDataList.add(XG5K);
         testDataList.add(XG1K);
 
-        for(TestData data : testDataList){
+        Map<String, List<ResultData>> map = new HashMap<>();
+
+        for (TestData data : testDataList) {
             ROCChart imp = new ROCChart(data);
+            imp.parseDataTxt(data.filePath);
+            mResultDataList = new ArrayList<>();
+            for (int i = 0; i <= 100; i += 5) {
+                EXCEPTION_THRESHOLD = i / 100f;
+                imp.start();
+            }
+            map.put(data.name, mResultDataList);
         }
 
-        try {
-            imp.parseDataTxt(filePath);
-            imp.setOnAntigenMarkListener(new OnAntigenMarkListener() {
-                @Override
-                public void onAntigenMarked(AntigenResult result) {
+        drawLineChart(createDataset(map));
 
-                }
+    }
 
-                @Override
-                public void onMarkedFinished(ResultData data) {
-
-                }
+    private static XYSeriesCollection createDataset(Map<String, List<ResultData>> data) {
+        XYSeriesCollection mCollection = new XYSeriesCollection();
+        data.forEach((key, value) -> {
+            XYSeries series = new XYSeries(key);
+            value.forEach(resultData -> {
+                series.add(resultData.FPR, resultData.TPR);
             });
-            imp.start();
-        } catch (IOException e) {
-            e.printStackTrace();
+            mCollection.addSeries(series);
+        });
+        return mCollection;
+    }
+
+    private static void drawLineChart(XYSeriesCollection collection){
+        StandardChartTheme mChartTheme = new StandardChartTheme("CN");
+        mChartTheme.setLargeFont(new Font("黑体", Font.BOLD, 20));
+        mChartTheme.setExtraLargeFont(new Font("宋体", Font.PLAIN, 15));
+        mChartTheme.setRegularFont(new Font("宋体", Font.PLAIN, 15));
+        ChartFactory.setChartTheme(mChartTheme);
+        JFreeChart mChart = ChartFactory.createXYLineChart(
+                "折线图",
+                "X",
+                "Y",
+                collection,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    UIManager.setLookAndFeel(new NimbusLookAndFeel());
+                    SubstanceLookAndFeel.setCurrentWatermark(new SubstanceCopperplateEngravingWatermark());
+                    LineChartFrame frame = new LineChartFrame(mChart);
+                    frame.setVisible(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    static class LineChartFrame extends JFrame {
+        private JPanel contentPane;
+        private JPanel chartPanel;
+        public LineChartFrame(JFreeChart chart){
+            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+            setBounds(0, 0, (int) dim.getWidth() * 7 / 8, (int) dim.getHeight() * 7 / 8);
+            setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            contentPane = new JPanel();
+            contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+            contentPane.setLayout(new BorderLayout(0, 0));
+            setContentPane(contentPane);
+            chartPanel = new JPanel();
+            contentPane.add(chartPanel);
+            chartPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+            setLocationRelativeTo(null);
+            ChartPanel cp = new ChartPanel(chart);
+            cp.setPreferredSize(new Dimension(getWidth() - 5, getHeight() - 5));
+            chartPanel.removeAll();
+            chartPanel.add(cp);
+            validate();
         }
     }
 
