@@ -31,13 +31,14 @@ public class DCAImp {
 	//DS xgboost 1w条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_serror_rate","dst_host_same_src_port_rate","dst_host_srv_count","hot","dst_host_srv_diff_host_rate"};
 	//DS 粗糙集 5k条
-//	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_count","dst_host_diff_srv_rate","dst_host_srv_diff_host_rate","dst_host_srv_rerror_rate"};
+//	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_count","dst_host_diff_srv_rate","dst_host_same_src_port_rate","dst_host_srv_diff_host_rate","dst_host_srv_rerror_rate"};
 	//DS xgboost 5k条
 //	private static final String[] COLUMNS_TO_CAL = {"dst_host_srv_serror_rate","dst_host_same_src_port_rate","src_bytes","hot","dst_host_srv_diff_host_rate"};
 	//DS 粗糙集 1k条
-	private static final String[] COLUMNS_TO_CAL = {"dst_host_same_src_port_rate","dst_host_srv_rerror_rate","dst_host_srv_diff_host_rate"};
+	private static final String[] COLUMNS_TO_CAL = {"duration","dst_host_same_src_port_rate","dst_host_srv_rerror_rate"};
 	//DS xgboost 1k条 
 //	private static final String[] COLUMNS_TO_CAL = {"dst_bytes","hot","dst_host_srv_count","src_bytes","dst_host_same_src_port_rate","srv_serror_rate","duration"};
+//	private static final String[] COLUMNS_TO_CAL = {"dst_host_count","dst_host_same_src_port_rate","dst_host_srv_diff_host_rate"};
 	//DS 粗糙集 0.5k条
 //	private static final String[] COLUMNS_TO_CAL = {"duration","dst_host_same_src_port_rate","dst_host_srv_rerror_rate"};
 	//DS xgboost 0.5k条
@@ -74,11 +75,11 @@ public class DCAImp {
 //		mMigrationThreshold = (float)(new Random().nextInt(2250000)+1125000)/100000;
 //		mMigrationThreshold = (float)(new Random().nextInt(4900000)+200000)/100000;
 		//粗糙集 1w条
-//		mMigrationThreshold = (float)new Random().nextInt(127);
+//		mMigrationThreshold = (float)new Random().nextInt(132);
 		//粗糙集 5k条
 //		mMigrationThreshold = (float)new Random().nextInt(133);
 		//粗糙集 1k条
-		mMigrationThreshold = (float)new Random().nextInt(135)+1;
+		mMigrationThreshold = (float)new Random().nextInt(130);
 		//粗糙集 0.5k条
 //		mMigrationThreshold = (float)new Random().nextInt(147)+1;
 		//xgboost 1w条
@@ -86,7 +87,7 @@ public class DCAImp {
 		//xgboost 5k条
 //		mMigrationThreshold = (float)new Random().nextInt(92)+1;
 		//xgboost 1k条
-//		mMigrationThreshold = (float)new Random().nextInt(93)+1;
+//		mMigrationThreshold = (float)new Random().nextInt(85)+1;
 		//xgboost 0.5k条
 //		mMigrationThreshold = (float)new Random().nextInt(116)+3;
 //		mMigrationThreshold = 10;
@@ -103,7 +104,7 @@ public class DCAImp {
 //		// SEMI权值列
 //		mWeightMatrix[1][0] = (float)0;
 //		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)3.5;
+//		mWeightMatrix[1][2] = (float)3.3;
 //		// MAT权值列
 //		mWeightMatrix[2][0] = (float)7;
 //		mWeightMatrix[2][1] = (float)3.5;
@@ -116,11 +117,11 @@ public class DCAImp {
 //		// SEMI权值列
 //		mWeightMatrix[1][0] = (float)0;
 //		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)1.9;
+//		mWeightMatrix[1][2] = (float)2.2;
 //		//  MAT权值列
 //		mWeightMatrix[2][0] = (float)4;
 //		mWeightMatrix[2][1] = (float)2;
-//		mWeightMatrix[2][2] = (float)-0;
+//		mWeightMatrix[2][2] = (float)0;
 		//粗糙集权值矩阵 1k条
 //		CSM权值列
 		mWeightMatrix[0][0] = (float)2;//PAMP
@@ -129,11 +130,11 @@ public class DCAImp {
 		// SEMI权值列
 		mWeightMatrix[1][0] = (float)0;
 		mWeightMatrix[1][1] = (float)0;
-		mWeightMatrix[1][2] = (float)0.8;
+		mWeightMatrix[1][2] = (float)1;
 		//  MAT权值列
 		mWeightMatrix[2][0] = (float)2;
 		mWeightMatrix[2][1] = (float)1;
-		mWeightMatrix[2][2] = (float)-0.3;
+		mWeightMatrix[2][2] = (float)0;
 		//粗糙集权值矩阵 0.5k条
 //		CSM权值列
 //		mWeightMatrix[0][0] = (float)2;//PAMP
@@ -181,10 +182,10 @@ public class DCAImp {
 //		// SEMI权值列
 //		mWeightMatrix[1][0] = (float)0;
 //		mWeightMatrix[1][1] = (float)0;
-//		mWeightMatrix[1][2] = (float)1.3;
+//		mWeightMatrix[1][2] = (float)2.1;
 //		//  MAT权值列
-//		mWeightMatrix[2][0] = (float)2;
-//		mWeightMatrix[2][1] = (float)1;
+//		mWeightMatrix[2][0] = (float)1.8;
+//		mWeightMatrix[2][1] = (float)0.9;
 //		mWeightMatrix[2][2] = (float)0;
 		//xgboost 0.5k条
 		// CSM权值列
@@ -223,6 +224,9 @@ public class DCAImp {
 //		float count2=calAvg("dst_bytes");//中位数
 //		xgboost 1k条
 //		float count1=calAvg("count");//中位数
+//		float count1=calAvg("count");//中位数
+//		float count2=calAvg("serror_rate");//中位数
+//		float count3=calAvg("src_bytes");//中位数
 //		xgboost 0.5k条
 //		float count1=calAvg("count");//中位数
 		for (int i = 0; i < mAntigenArray.length; i++) {
@@ -243,9 +247,13 @@ public class DCAImp {
 //			int num2=titleMap.get("dst_bytes");
 			//xgboost 1k条
 //			int num1=titleMap.get("count");
+//			int num1=titleMap.get("count");
+//			int num2=titleMap.get("serror_rate");
+//			int num3=titleMap.get("src_bytes");
 			//xgboost 0.5k条
 //			int num1=titleMap.get("count");
 			float value1=mAntigenArray[i][num1]-count1;
+//			float value2=mAntigenArray[i][num2]-count2;
 //			float value3=mAntigenArray[i][num3]-count3;
 //			float value4=mAntigenArray[i][num4]-count4;
 			// FIXME 修改PAMP和SS计算的判断条件
@@ -756,7 +764,7 @@ public class DCAImp {
 		DCAImp imp = new DCAImp();
 //		String filePath = "kddcup_1w_test.csv";
 //		String filePath = "kddcup_5k_rs_test_10.csv";
-		String filePath = "kddcup_1k_rs_test2_10.csv";
+		String filePath = "kddcup_1k_rs_test_10.csv";
 //		String filePath = "kddcup_0.5k_rs_test_10.csv";
 		try {
 			imp.parseDataTxt(filePath);
